@@ -1,0 +1,14 @@
+{
+  "name": "ngrx-puml-generator",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "David Enke <post@davidenke.de>",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "2.8.1"
+  }
+}
