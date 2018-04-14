@@ -1,0 +1,66 @@
+extends:
+- tslint:latest
+- rxjs-tslint-rules
+rules:
+  # tslint rules
+  array-type:
+  - true
+  - array
+  quotemark:
+  - true
+  - single
+  interface-name:
+  - never-prefix
+  max-line-length:
+  - true
+  - 240
+  member-access:
+  - true
+  - no-public
+  member-ordering:
+  - true
+  - order:
+    - public-static-field
+    - public-static-method
+    - private-instance-field
+    - public-instance-field
+    - public-constructor
+    - public-instance-method
+    - private-instance-method
+  no-console:
+  - true
+  - debug
+  - info
+  - log
+  no-empty: false
+  no-implicit-dependencies: false
+  no-string-literal: false
+  no-submodule-imports: false
+  object-literal-key-quotes:
+  - consistent-as-needed
+  object-literal-sort-keys: false
+  one-line: false
+  ordered-imports: false
+  prefer-object-spread: false
+  trailing-comma: false
+  typedef-whitespace:
+  - true
+  - call-signature: nospace
+    index-signature: nospace
+    parameter: nospace
+    property-declaration: nospace
+    variable-declaration: nospace
+  variable-name:
+  - true
+  - check-format
+  - allow-leading-underscore
+
+  # rxjs-tslint-rules
+  rxjs-no-add:
+    severity: error
+  rxjs-no-operator:
+    severity: error
+  rxjs-no-patched:
+    severity: error
+  rxjs-no-wholesale:
+    severity: error

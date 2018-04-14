@@ -1,19 +1,29 @@
 {
   "compilerOptions": {
     "target": "es5",
-    "lib": [
-      "es2017",
-      "es2015",
-      "dom",
-      "es6"
-    ],
+    "rootDir": "src",
+    "outDir": "dist",
     "module": "commonjs",
-    "outDir": "./",
-    "sourceMap": false,
-    "strict": true
+    "declaration": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "removeComments": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "inlineSources": true,
+    "lib": [
+      "es2015"
+    ],
+    "types": [
+      "node"
+    ]
   },
   "include": [
-    "**.ts"
+    "typings.d.ts",
+    "src/polyfills.ts",
+    "src/index.ts"
   ],
   "exclude": [
     "node_modules"

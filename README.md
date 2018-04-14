@@ -1,0 +1,3 @@
+...
+
+`npm run start -- -c test/tsconfig.json  -t test/test.effects.ts`
