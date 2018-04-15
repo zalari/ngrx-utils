@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs/Observable';
-import { map } from 'rxjs/operators';
+import { concatMap, map } from 'rxjs/operators';
 
 import { Actions, Effect, ofType } from '@ngrx/effects';
 import { Action } from '@ngrx/store';
@@ -7,11 +7,13 @@ import { Action } from '@ngrx/store';
 // actions
 export enum LayoutCommandTypes {
     OpenSidenav = '[Layout] Open Sidenav',
-    CloseSidenav = '[Layout] Close Sidenav'
+    CloseSidenav = '[Layout] Close Sidenav',
+    LogSidenav = '[Layout] Log Sidenav'
 }
 export enum LayoutEventTypes {
     SidenavOpened = '[Layout] Sidenav Opened',
-    SidenavClosed = '[Layout] Sidenav Closed'
+    SidenavClosed = '[Layout] Sidenav Closed',
+    SidenavToggled = '[Layout] Sidenav toggled'
 }
 
 // commands
@@ -23,6 +25,10 @@ export class CloseSidenavCommand implements Action {
     readonly type = LayoutCommandTypes.CloseSidenav;
 }
 
+export class LogSidenavCommand implements Action {
+    readonly type = LayoutCommandTypes.LogSidenav;
+}
+
 // events
 export class SidenavOpenedEvent implements Action {
     readonly type = LayoutEventTypes.SidenavOpened;
@@ -32,8 +38,12 @@ export class SidenavClosedEvent implements Action {
     readonly type = LayoutEventTypes.SidenavClosed;
 }
 
-export type LayoutCommands = OpenSidenavCommand | CloseSidenavCommand;
-export type LayoutEvents = SidenavOpenedEvent | SidenavClosedEvent;
+export class SidenavToggledEvent implements Action {
+    readonly type = LayoutEventTypes.SidenavToggled;
+}
+
+export type LayoutCommands = OpenSidenavCommand | CloseSidenavCommand | LogSidenavCommand;
+export type LayoutEvents = SidenavOpenedEvent | SidenavClosedEvent | SidenavToggledEvent;
 
 // state
 export interface State {
@@ -62,6 +72,9 @@ export function reducer(
                 showSidenav: true
             };
 
+        case LayoutEventTypes.SidenavToggled:
+            return state;
+
         default:
             return state;
     }
@@ -74,15 +87,37 @@ export const isSidenavVisible = (state: State) => state.showSidenav;
 export class LayoutEffects {
 
     @Effect()
-    SIDENAV_OPENED: Observable<Action> = this._actions.pipe(
+    SIDENAV_OPENED: Observable<SidenavOpenedEvent> = this._actions.pipe(
         ofType<LayoutCommands>(LayoutCommandTypes.OpenSidenav),
         map(() => new SidenavOpenedEvent())
     );
 
     @Effect()
-    SIDENAV_CLOSED: Observable<Action> = this._actions.pipe(
+    SIDENAV_CLOSED: Observable<SidenavClosedEvent> = this._actions.pipe(
         ofType<LayoutCommands>(LayoutCommandTypes.CloseSidenav),
         map(() => new SidenavClosedEvent())
+    );
+
+    // TODO: add all effect types from nrwl.io
+
+    @Effect()
+    // Splitter
+    WEIRD_SIDENAV: Observable<SidenavClosedEvent | LogSidenavCommand> = this._actions.pipe(
+        ofType<LayoutCommands>(LayoutCommandTypes.CloseSidenav),
+        concatMap(() => [
+            new SidenavClosedEvent(),
+            new LogSidenavCommand()
+        ])
+    );
+
+    @Effect()
+    // Aggregator
+    ALL_SIDENAV: Observable<SidenavToggledEvent> = this._actions.pipe(
+        ofType<LayoutCommands>(
+            LayoutCommandTypes.OpenSidenav,
+            LayoutCommandTypes.CloseSidenav
+        ),
+        map(() => new SidenavToggledEvent())
     );
 
     constructor(private _actions: Actions) {}
