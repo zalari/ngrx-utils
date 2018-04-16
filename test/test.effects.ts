@@ -2,7 +2,9 @@ import { Observable } from 'rxjs/Observable';
 import { concatMap, map } from 'rxjs/operators';
 
 import { Actions, Effect, ofType } from '@ngrx/effects';
-import { Action } from '@ngrx/store';
+
+import { CommandAction } from '../src/classes/command-action.class';
+import { EventAction } from '../src/classes/event-action.class';
 import { _AggregatorDecider } from '../src/decorators/effects/deciders/_aggregator-decider.decorator';
 
 // actions
@@ -18,28 +20,28 @@ export enum LayoutEventTypes {
 }
 
 // commands
-export class OpenSidenavCommand implements Action {
+export class OpenSidenavCommand implements CommandAction {
     readonly type = LayoutCommandTypes.OpenSidenav;
 }
 
-export class CloseSidenavCommand implements Action {
+export class CloseSidenavCommand implements CommandAction {
     readonly type = LayoutCommandTypes.CloseSidenav;
 }
 
-export class LogSidenavCommand implements Action {
+export class LogSidenavCommand implements CommandAction {
     readonly type = LayoutCommandTypes.LogSidenav;
 }
 
 // events
-export class SidenavOpenedEvent implements Action {
+export class SidenavOpenedEvent implements EventAction {
     readonly type = LayoutEventTypes.SidenavOpened;
 }
 
-export class SidenavClosedEvent implements Action {
+export class SidenavClosedEvent implements EventAction {
     readonly type = LayoutEventTypes.SidenavClosed;
 }
 
-export class SidenavToggledEvent implements Action {
+export class SidenavToggledEvent implements EventAction {
     readonly type = LayoutEventTypes.SidenavToggled;
 }
 
