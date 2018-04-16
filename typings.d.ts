@@ -1,5 +1,3 @@
-import { ExecOptions, ExecFileOptions, SpawnOptions, ForkOptions } from 'child_process';
-
 declare module '*package.json' {
     const name: string | undefined;
     const version: string | undefined;

@@ -1,18 +1,22 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "rootDir": "src",
     "outDir": "dist",
-    "module": "commonjs",
+    "sourceMap": true,
     "declaration": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "inlineSources": true,
     "noImplicitAny": true,
-    "strictNullChecks": true,
-    "removeComments": true,
     "noUnusedLocals": true,
     "noUnusedParameters": false,
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "inlineSources": true,
+    "removeComments": true,
+    "strictNullChecks": true,
+
+    "target": "es5",
+    "rootDir": "src",
     "lib": [
       "es2015"
     ],

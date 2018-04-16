@@ -3,6 +3,7 @@ import { concatMap, map } from 'rxjs/operators';
 
 import { Actions, Effect, ofType } from '@ngrx/effects';
 import { Action } from '@ngrx/store';
+import { _AggregatorDecider } from '../src/decorators/effects/deciders/_aggregator-decider.decorator';
 
 // actions
 export enum LayoutCommandTypes {
@@ -111,7 +112,7 @@ export class LayoutEffects {
     );
 
     @Effect()
-    // Aggregator
+    @_AggregatorDecider()
     ALL_SIDENAV: Observable<SidenavToggledEvent> = this._actions.pipe(
         ofType<LayoutCommands>(
             LayoutCommandTypes.OpenSidenav,
