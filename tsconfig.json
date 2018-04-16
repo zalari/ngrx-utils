@@ -13,6 +13,7 @@
     "noUnusedLocals": true,
     "noUnusedParameters": false,
     "removeComments": true,
+    "skipLibCheck": true,
     "strictNullChecks": true,
 
     "target": "es5",
