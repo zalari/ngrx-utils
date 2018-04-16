@@ -1,3 +1,9 @@
-...
+# Ngrx utils
 
-`npm run start -- --config test/tsconfig.json --source test/test.effects.ts`
+## Start using the test
+`npm run start -- --config test/test.tsconfig.json --source test/test.effects.ts`
+
+## Run tests
+Using mocha and chai
+
+`npm run test`
