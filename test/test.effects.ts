@@ -6,6 +6,8 @@ import { Actions, Effect, ofType } from '@ngrx/effects';
 import { CommandAction } from '../src/classes/command-action.class';
 import { EventAction } from '../src/classes/event-action.class';
 import { _AggregatorDecider } from '../src/decorators/effects/deciders/_aggregator-decider.decorator';
+import { _SplitterDecider } from '../src/decorators/effects/deciders/_splitter-decider.decorator';
+import { _FilteringDecider } from '../src/decorators/effects/deciders/_filtering-decider.decorator';
 
 // actions
 export enum LayoutCommandTypes {
@@ -90,21 +92,21 @@ export const isSidenavVisible = (state: State) => state.showSidenav;
 export class LayoutEffects {
 
     @Effect()
+    @_FilteringDecider()
     SIDENAV_OPENED: Observable<SidenavOpenedEvent> = this._actions.pipe(
         ofType<LayoutCommands>(LayoutCommandTypes.OpenSidenav),
         map(() => new SidenavOpenedEvent())
     );
 
     @Effect()
+    @_FilteringDecider()
     SIDENAV_CLOSED: Observable<SidenavClosedEvent> = this._actions.pipe(
         ofType<LayoutCommands>(LayoutCommandTypes.CloseSidenav),
         map(() => new SidenavClosedEvent())
     );
 
-    // TODO: add all effect types from nrwl.io
-
     @Effect()
-    // Splitter
+    @_SplitterDecider()
     WEIRD_SIDENAV: Observable<SidenavClosedEvent | LogSidenavCommand> = this._actions.pipe(
         ofType<LayoutCommands>(LayoutCommandTypes.CloseSidenav),
         concatMap(() => [

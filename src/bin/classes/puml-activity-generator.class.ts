@@ -2,6 +2,7 @@ import { EffectExchangeTypes } from '../interface/effect-exchange-types.interfac
 import { Generator } from '../interface/puml-generator.interface';
 import { ActivityJoinSyntax } from '../enum/activity-join-syntax.enum';
 import { ActivityType } from '../enum/activity-type.enum';
+import { ArrowType } from '../enum/arrow-type.enum';
 
 export class PumlActivityGenerator implements Generator {
 
@@ -34,15 +35,28 @@ export class PumlActivityGenerator implements Generator {
             outputActions = this._joinActions(effect.outputTypes, ActivityJoinSyntax.Split, ActivityType.Out);
         }
 
-        // combine actions in swim lanes joined by new lines
-        return [
+        // combine actions in swim lanes
+        const inputs = [
             '|In|',
             'start',
-            `-> ${effect.memberName};`,
-            inputActions,
+            this._wrapArrow(effect.memberName),
+            inputActions
+        ];
+        const outputs = [
             '|Out|',
             outputActions,
-            'detach',
+            'detach'
+        ];
+
+        // add the name(s) of the tagging decorator(s) if present
+        if  (effect.taggingDecorators !== undefined && effect.taggingDecorators.length > 0) {
+            inputs.push(this._wrapArrow(effect.taggingDecorators.join(', ')));
+        }
+
+        // join by new lines
+        return [
+            ...inputs,
+            ...outputs,
             ''
         ].join('\n');
     }
@@ -113,6 +127,25 @@ export class PumlActivityGenerator implements Generator {
      */
     private _wrapAction(action: string, prefix = '', type: ActivityType = ActivityType.Default): string {
         return `${prefix}:${action}${type}`;
+    }
+
+    /**
+     * wraps a text with arrow syntax
+     * @param {string} arrowText
+     * @param {string} prefix
+     * @param {ArrowType} type
+     * @returns {string}
+     * @private
+     */
+    private _wrapArrow(arrowText: string, prefix = '', type: ArrowType = ArrowType.Default): string {
+        let arrow = '->';
+
+        // non default arrow types are added in square brackets
+        if (type !== ArrowType.Default) {
+            arrow = `-[${type}]->`;
+        }
+
+        return `${prefix}${arrow} ${arrowText};`;
     }
 
 }

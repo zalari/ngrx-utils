@@ -11,6 +11,8 @@ rules:
   - single
   interface-name:
   - never-prefix
+  max-classes-per-file:
+  - false
   max-line-length:
   - true
   - 240
