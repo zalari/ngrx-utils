@@ -6,7 +6,7 @@ import { PumlSequenceGenerator } from './puml-sequence-generator.class';
 
 export class PumlGenerator implements Generator {
 
-    constructor(private _diagramType: DiagramType = DiagramType.Sequence) {}
+    constructor(private _diagramType: DiagramType = DiagramType.Activity) {}
 
     /**
      * generates the PlantUML results
@@ -18,11 +18,11 @@ export class PumlGenerator implements Generator {
 
         // get reference to the matching generator
         switch (this._diagramType) {
+            default:
             case DiagramType.Activity:
                 generator = new PumlActivityGenerator();
                 break;
 
-            default:
             case DiagramType.Sequence:
                 generator = new PumlSequenceGenerator();
                 break;

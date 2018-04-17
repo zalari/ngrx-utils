@@ -97,7 +97,7 @@ export class CliTool {
             .description(pack.description as string)
             .option('-c, --config <path>', 'path to tsconfig.json')
             .option('-s, --source <path>', 'path to ngrx effects source file')
-            .option(`-d, --diagram <${diagramTypes.join('|')}>`, 'the diagram type to use', DiagramType.Sequence)
+            .option(`-d, --diagram <${diagramTypes.join('|')}>`, 'the diagram type to use', DiagramType.Activity)
             .parse(process.argv);
 
         // exit if diagram type is unknown
