@@ -117,6 +117,7 @@ export class CliTool {
 
         // create a project
         this._project = new Project({
+            // TODO: resolve the compiler options from the eventually extended base config (`extends`)
             tsConfigFilePath: commander.config,
             addFilesFromTsConfig: false
         });
@@ -124,7 +125,7 @@ export class CliTool {
         // add source file and keep reference
         this._sourceFiles = [
             ...commander.source,
-            // TODO: collect variadic source argument, s. https://github.com/tj/commander.js/issues/571
+            // TODO: collect variadic source argument and remove quick fix, s. https://github.com/tj/commander.js/issues/571
             // thus we have to merge all unresolved args as long as `source` is the only variadic argument
             ...commander.args
         ].map((sourcePath: string) => this._project.addExistingSourceFile(sourcePath));
