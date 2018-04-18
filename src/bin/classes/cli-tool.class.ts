@@ -10,6 +10,7 @@ import { DiagramType } from '../enum/diagram-type.enum';
 import { EffectsParser } from './effects-parser.class';
 import { PumlGenerator } from './puml-generator.class';
 import { EffectExchangeTypes } from '../interface/effect-exchange-types.interface';
+import { DiagnosticCategory } from 'ts-simple-ast/dist/typescript/typescript';
 
 const TARGET_EXT_NAME = 'puml';
 const TARGET_ENCODING = 'utf8';
@@ -32,12 +33,13 @@ export class CliTool {
      * @param {EffectsParser} parser
      */
     checkForErrors(parser: EffectsParser) {
-        // TODO: check for errors only to discontinue parser
         // check for diagnostics
-        const sourceFileDiagnostics: Diagnostic[] = parser.getDiagnostics();
-        if (sourceFileDiagnostics.length) {
+        const diagnostics: Diagnostic[] = parser.getDiagnostics();
+        console.log(diagnostics.map(d => d.getCategory()))
+        // check for errors only to discontinue parser
+        if (diagnostics.some((diagnostic: Diagnostic) => diagnostic.getCategory() === DiagnosticCategory.Error)) {
             this._exitWithError(
-                sourceFileDiagnostics
+                diagnostics
                     .map((sourceFileDiagnostic: Diagnostic) => {
                         return sourceFileDiagnostic
                             .getMessageText()
@@ -47,13 +49,13 @@ export class CliTool {
             );
         }
 
-        // TODO: check for errors only to discontinue parser
         // TODO: what's the difference to the 'normal' diagnostics?
         // check for pre-emit diagnostics
-        const sourceFilePreEmitDiagnostics: Diagnostic[] = parser.getPreEmitDiagnostics();
-        if (sourceFilePreEmitDiagnostics.length) {
+        const preEmitDiagnostics: Diagnostic[] = parser.getPreEmitDiagnostics();
+        // check for errors only to discontinue parser
+        if (preEmitDiagnostics.some((diagnostic: Diagnostic) => diagnostic.getCategory() === DiagnosticCategory.Error)) {
             this._exitWithError(
-                sourceFilePreEmitDiagnostics
+                preEmitDiagnostics
                     .map((sourceFilePreEmitDiagnostic: Diagnostic) => {
                         return sourceFilePreEmitDiagnostic
                             .getMessageText()
