@@ -1,5 +1,8 @@
 {
-  "name": "ngrx-utils",
+  "name": "@zalari/ngrx-utils",
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "0.0.1",
   "description": "",
   "bin": "dist/bin/index.js",
