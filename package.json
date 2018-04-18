@@ -1,7 +1,7 @@
 {
   "name": "@zalari/ngrx-utils",
   "description": "A library containing tagging decorators for @ngrx to help implementing the Nrwl conventions for @ngrx/effects.",
-  "version": "0.0.2-SNAPSHOT",
+  "version": "0.0.2",
   "publishConfig": {
     "access": "public"
   },
