@@ -1,0 +1,2 @@
+# keep the empty file to override .gitignore which excludes
+# the dist folder which is required for the npm release
