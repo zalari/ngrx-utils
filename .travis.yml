@@ -1,17 +1,26 @@
+# this is a node build
 language: node_js
 
+# cache node modules
+cache:
+  directories:
+    - "node_modules"
+
+# install dependencies
+install:
+  - npm install --silent
+
+# the jobs for building and deplyoing the package
 jobs:
   include:
-    - stage: build
-      if: branch = master
-      script:
-        - echo "Build package"
-        - npm run build
-    - stage: npm release
-      if: branch = master
-      script: echo "Deploying to npm ..."
+    - stage: build and deploy
+      script: npm run build
       deploy:
         provider: npm
-        api_key: $NPM_API_KEY
-#        on:
-#          branch: master
+        skip_cleanup: true
+        email: $NPM_EMAIL
+        api_key: $NPM_KEY
+        on:
+          tags: true
+          repo: zalari/ngrx-utils
+          branch: master
