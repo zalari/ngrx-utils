@@ -38,5 +38,8 @@
     "tslint": "5.9.1",
     "typescript": "2.8.1",
     "zone.js": "0.8.26"
+  },
+  "dependencies": {
+    "argv-auto-glob": "1.0.1"
   }
 }

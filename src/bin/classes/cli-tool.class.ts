@@ -1,14 +1,15 @@
 import { writeFile } from 'fs';
-import { dirname, basename, extname, join } from 'path';
+import { join } from 'path';
 
+import * as argvAutoGlob from 'argv-auto-glob';
 import * as commander from 'commander';
 import * as pack from '../../../package.json';
 import Project, { ClassDeclaration, ClassInstanceMemberTypes, Diagnostic, SourceFile } from 'ts-simple-ast';
 
-import { EffectsParser } from './effects-parser.class';
-import { EffectExchangeTypes } from '../interface/effect-exchange-types.interface';
-import { PumlGenerator } from './puml-generator.class';
 import { DiagramType } from '../enum/diagram-type.enum';
+import { EffectsParser } from './effects-parser.class';
+import { PumlGenerator } from './puml-generator.class';
+import { EffectExchangeTypes } from '../interface/effect-exchange-types.interface';
 
 const TARGET_EXT_NAME = 'puml';
 const TARGET_ENCODING = 'utf8';
@@ -17,11 +18,7 @@ export class CliTool {
 
     private _project: Project;
 
-    private _sourceFile: SourceFile;
-
-    private _targetFilePath: string;
-
-    private _effectsParser: EffectsParser;
+    private _sourceFiles: SourceFile[] = [];
 
     private _pumlGenerator: PumlGenerator;
 
@@ -32,11 +29,12 @@ export class CliTool {
 
     /**
      * if the given script contains errors, halt and output error messages
+     * @param {EffectsParser} parser
      */
-    checkForErrors() {
+    checkForErrors(parser: EffectsParser) {
         // TODO: check for errors only to discontinue parser
         // check for diagnostics
-        const sourceFileDiagnostics: Diagnostic[] = this._effectsParser.getDiagnostics();
+        const sourceFileDiagnostics: Diagnostic[] = parser.getDiagnostics();
         if (sourceFileDiagnostics.length) {
             this._exitWithError(
                 sourceFileDiagnostics
@@ -52,7 +50,7 @@ export class CliTool {
         // TODO: check for errors only to discontinue parser
         // TODO: what's the difference to the 'normal' diagnostics?
         // check for pre-emit diagnostics
-        const sourceFilePreEmitDiagnostics: Diagnostic[] = this._effectsParser.getPreEmitDiagnostics();
+        const sourceFilePreEmitDiagnostics: Diagnostic[] = parser.getPreEmitDiagnostics();
         if (sourceFilePreEmitDiagnostics.length) {
             this._exitWithError(
                 sourceFilePreEmitDiagnostics
@@ -66,22 +64,27 @@ export class CliTool {
         }
     }
 
-    getEffectExchangeTypes(): EffectExchangeTypes[] {
-        const classDeclarations = this._effectsParser.getClasses();
+    /**
+     * gather the effect types
+     * @param {EffectsParser} parser
+     * @returns {EffectExchangeTypes[]}
+     */
+    getEffectExchangeTypes(parser: EffectsParser): EffectExchangeTypes[] {
+        const classDeclarations = parser.getClasses();
         if (classDeclarations === undefined) {
             this._exitWithError(`No class found in source file`);
         }
 
-        const decoratedMembers = this._effectsParser.getEffectDecoratedMembers(classDeclarations as ClassDeclaration[]);
+        const decoratedMembers = parser.getEffectDecoratedMembers(classDeclarations as ClassDeclaration[]);
         if (decoratedMembers === undefined) {
             this._exitWithError(`No effects found in source file`);
         }
 
         return (decoratedMembers as ClassInstanceMemberTypes[]).map((decoratedMember: ClassInstanceMemberTypes) => {
-            const memberName = this._effectsParser.getEffectName(decoratedMember);
-            const taggingDecorators = this._effectsParser.getTaggingDecorators(decoratedMember);
-            const inputTypes = this._effectsParser.getInputTypes(decoratedMember);
-            const outputTypes = this._effectsParser.getOutputTypes(decoratedMember);
+            const memberName = parser.getEffectName(decoratedMember);
+            const taggingDecorators = parser.getTaggingDecorators(decoratedMember);
+            const inputTypes = parser.getInputTypes(decoratedMember);
+            const outputTypes = parser.getOutputTypes(decoratedMember);
 
             return { memberName, taggingDecorators, inputTypes, outputTypes };
         });
@@ -96,9 +99,14 @@ export class CliTool {
             .version(pack.version as string)
             .description(pack.description as string)
             .option('-c, --config <path>', 'path to tsconfig.json')
-            .option('-s, --source <path>', 'path to ngrx effects source file')
+            .option('-s, --source <path>', 'path to ngrx effects source file', (source: string, sources: string[]) => {
+                // TODO: this will only work to collect coerced arguments
+                // @ref https://github.com/tj/commander.js/issues/571#issuecomment-336526935
+                sources.push(source);
+                return sources;
+            }, [])
             .option(`-d, --diagram <${diagramTypes.join('|')}>`, 'the diagram type to use', DiagramType.Activity)
-            .parse(process.argv);
+            .parse(argvAutoGlob(process.argv));
 
         // exit if diagram type is unknown
         if (!diagramTypes.includes(commander.diagram)) {
@@ -111,41 +119,46 @@ export class CliTool {
             addFilesFromTsConfig: false
         });
 
+        // TODO: collect variadic source argument, s. https://github.com/tj/commander.js/issues/571
         // add source file and keep reference
-        this._sourceFile = this._project.addExistingSourceFile(commander.source);
-
-        // create the target path
-        const sourceDirName = dirname(commander.source);
-        const sourceExtName = extname(commander.source);
-        const targetBaseName = basename(commander.source, sourceExtName);
-        this._targetFilePath = join(sourceDirName, `${targetBaseName}.${TARGET_EXT_NAME}`);
-
-        // instantiate parser
-        this._effectsParser = new EffectsParser(this._sourceFile);
+        this._sourceFiles = commander.source.map((sourcePath: string) => this._project.addExistingSourceFile(sourcePath));
 
         // instantiate puml generator with diagram type
         this._pumlGenerator = new PumlGenerator(commander.diagram);
     }
 
     private _processCommand() {
-        // check for errors and return if necessary
-        this.checkForErrors();
-
-        // get effects
-        const effects = this.getEffectExchangeTypes();
-
-        // create puml for effects file
-        const activities = this._pumlGenerator.output(effects);
-
-        // write to target file
-        this._writeTarget(activities)
+        Promise
+            .all(this._sourceFiles.map((sourceFile: SourceFile) => this._processSourceFile(sourceFile)))
             .catch((error: Error) => this._exitWithError(error.message))
             .then(() => this._exitSuccessful());
     }
 
-    private _writeTarget(content: string): Promise<boolean | Error> {
-        return new Promise((resolve, reject) => {
-            writeFile(this._targetFilePath, content, TARGET_ENCODING, (error: Error) => {
+    private _processSourceFile(sourceFile: SourceFile): Promise<true | Error> {
+        // instantiate parser
+        const effectsParser = new EffectsParser(sourceFile);
+
+        // check for errors and return if necessary
+        this.checkForErrors(effectsParser);
+
+        // get effects
+        const effects = this.getEffectExchangeTypes(effectsParser);
+
+        // create puml for effects file
+        const activities = this._pumlGenerator.output(effects);
+
+        // create the target file path
+        const sourceDirName = sourceFile.getDirectoryPath();
+        const targetBaseName = sourceFile.getBaseNameWithoutExtension();
+        const targetFilePath = join(sourceDirName, `${targetBaseName}.${TARGET_EXT_NAME}`);
+
+        // write to target file
+        return this._writeTarget(targetFilePath, activities);
+    }
+
+    private _writeTarget(filePath: string, content: string): Promise<true | Error> {
+        return new Promise<true | Error>((resolve, reject) => {
+            writeFile(filePath, content, TARGET_ENCODING, (error: Error) => {
                 if (error) {
                     reject(error);
                 }
