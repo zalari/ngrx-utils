@@ -12,7 +12,7 @@
     "start": "ts-node src/bin/index.ts",
     "test": "mocha -r ts-node/register test/**/*.spec.ts"
   },
-  "author": "David Enke <post@davidenke.de>",
+  "author": "David Enke <david.enke@zalari.de>",
   "license": "MIT",
   "peerDependencies": {
     "@angular/core": "^5.1.1",
