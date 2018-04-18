@@ -3,14 +3,15 @@ language: node_js
 jobs:
   include:
     - stage: build
+      if: branch = master
       script:
         - echo "Build package"
         - npm run build
-      if: branch = master
     - stage: npm release
+      if: branch = master
       script: echo "Deploying to npm ..."
       deploy:
         provider: npm
         api_key: $NPM_API_KEY
-        on:
-          branch: master
+#        on:
+#          branch: master
