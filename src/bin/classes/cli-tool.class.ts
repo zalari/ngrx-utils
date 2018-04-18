@@ -119,9 +119,13 @@ export class CliTool {
             addFilesFromTsConfig: false
         });
 
-        // TODO: collect variadic source argument, s. https://github.com/tj/commander.js/issues/571
         // add source file and keep reference
-        this._sourceFiles = commander.source.map((sourcePath: string) => this._project.addExistingSourceFile(sourcePath));
+        this._sourceFiles = [
+            ...commander.source,
+            // TODO: collect variadic source argument, s. https://github.com/tj/commander.js/issues/571
+            // thus we have to merge all unresolved args as long as `source` is the only variadic argument
+            ...commander.args
+        ].map((sourcePath: string) => this._project.addExistingSourceFile(sourcePath));
 
         // instantiate puml generator with diagram type
         this._pumlGenerator = new PumlGenerator(commander.diagram);
