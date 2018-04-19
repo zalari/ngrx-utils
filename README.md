@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/zalari/ngrx-utils.svg?branch=master)](https://travis-ci.org/zalari/ngrx-utils)
 # Ngrx utils
 A library containing tagging decorators for [@ngrx] to help implementing the
 [Nrwl conventions][nrwl.io] for [@ngrx/effects].
