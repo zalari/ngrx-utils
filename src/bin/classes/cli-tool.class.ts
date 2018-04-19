@@ -28,6 +28,7 @@ export class CliTool {
     private _pumlGenerator: PumlGenerator;
 
     constructor() {
+        // initialize by registering the commands
         this._registerCommands();
     }
 
@@ -94,6 +95,10 @@ export class CliTool {
         });
     }
 
+    /**
+     * register the commander options and read the arguments
+     * @private
+     */
     private _registerCommands() {
         const diagramTypes: string[] = Object
             .keys(DiagramType)
@@ -152,6 +157,10 @@ export class CliTool {
             .catch((error) => this._exitWithError(error.toString()));
     }
 
+    /**
+     * process the commands
+     * @private
+     */
     private _processCommand() {
         Promise
             .all(this._sourceFiles.map((sourceFile: SourceFile) => this._processSourceFile(sourceFile)))
@@ -159,6 +168,12 @@ export class CliTool {
             .then(() => this._exitSuccessful());
     }
 
+    /**
+     * process a given source file asynchronously
+     * @param {SourceFile} sourceFile
+     * @return {Promise<true | Error>}
+     * @private
+     */
     private _processSourceFile(sourceFile: SourceFile): Promise<true | Error> {
         // instantiate parser
         const effectsParser = new EffectsParser(sourceFile);
@@ -241,6 +256,13 @@ export class CliTool {
         });
     }
 
+    /**
+     * writes the result to the target path
+     * @param {string} filePath
+     * @param {string} content
+     * @return {Promise<true | Error>}
+     * @private
+     */
     private _writeTarget(filePath: string, content: string): Promise<true | Error> {
         return new Promise<true | Error>((resolve, reject) => {
             writeFile(filePath, content, TARGET_ENCODING, (error: Error) => {
@@ -253,12 +275,21 @@ export class CliTool {
         });
     }
 
+    /**
+     * exit the tool with an error message (status code 1)
+     * @param {string} message
+     * @private
+     */
     private _exitWithError(message: string) {
         this._progressBar.interrupt(message);
         this._progressBar.terminate();
         process.exit(1);
     }
 
+    /**
+     * exit the tool with a success message (status code 0)
+     * @private
+     */
     private _exitSuccessful() {
         process.exit(0);
     }
