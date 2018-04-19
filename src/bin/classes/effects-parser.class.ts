@@ -92,6 +92,7 @@ export class EffectsParser {
      */
     getInputTypes(effectDecoratedMember: ClassInstanceMemberTypes): string[] | undefined {
         let ofTypeNode: Node | undefined;
+        let ofTypeChildren: Node[] = [];
 
         effectDecoratedMember
         // get the assignment expression
@@ -111,13 +112,16 @@ export class EffectsParser {
             );
 
         // return if no `ofType` can be found
-        if (ofTypeNode === undefined) {
+        if (ofTypeNode !== undefined) {
+            ofTypeChildren = ofTypeNode.getChildren();
+        } else {
             return undefined;
         }
 
-        const ofTypeChildren = (ofTypeNode as Node).getChildren();
+        // find index of the open paren `(`, as it is followed by the type we're interested in
         const ofTypeOpenIndex = ofTypeChildren.findIndex((node: Node) => node.getKind() === SyntaxKind.OpenParenToken);
 
+        // too bad, there's no open paren :(
         if (ofTypeOpenIndex < 0) {
             return undefined;
         }
@@ -131,7 +135,8 @@ export class EffectsParser {
         const importedClasses = this._sourceFile.getImportDeclarations()
             .reduce((collectedClasses: ClassDeclaration[], imported: ImportDeclaration) => [
                 ...collectedClasses,
-                ...imported.getModuleSpecifierSourceFileOrThrow()
+                ...imported
+                    .getModuleSpecifierSourceFileOrThrow()
                     .getClasses()
             ], []);
         const localClasses = this._sourceFile.getClasses();
@@ -141,11 +146,15 @@ export class EffectsParser {
             ...importedClasses,
             ...localClasses
         ]
-        // find the classes which implement an action class
+        // find the classes which implement / extend an action class
             .filter((actionClass: ClassDeclaration) => {
-                const classImplementations = actionClass.getImplements();
-                return classImplementations.some((classImplementation: ExpressionWithTypeArguments) => {
-                    return ACTION_CLASS_NAMES.includes(classImplementation.getText());
+                const basis = actionClass.getImplements();
+                const extendedFrom = actionClass.getExtends();
+                if (extendedFrom !== undefined) {
+                    basis.push(extendedFrom);
+                }
+                return basis.some((basedOn: ExpressionWithTypeArguments) => {
+                    return ACTION_CLASS_NAMES.includes(basedOn.getText());
                 });
             });
 
@@ -154,13 +163,15 @@ export class EffectsParser {
             const actionTypeClass = actionClasses
                 .find((actionClass: ClassDeclaration) => {
                     const typeProperty = actionClass.getPropertyOrThrow('type');
-                    const typePropertyName = typeProperty.getFirstChildByKindOrThrow(SyntaxKind.PropertyAccessExpression)
+                    const typePropertyName = typeProperty
+                        .getFirstChildByKindOrThrow(SyntaxKind.PropertyAccessExpression)
                         .getText();
+                    // the type property value has to match our enum value
                     return typePropertyName === inputTypeEnumValue;
                 });
 
+            // bad luck, no action class found matching our enum value
             if (actionTypeClass === undefined) {
-                console.error('no class found for', inputTypeEnumValue);
                 return inputTypeEnumValue;
             }
 
