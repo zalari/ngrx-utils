@@ -1,23 +1,27 @@
-import { writeFile } from 'fs';
-import { join } from 'path';
+import { readFile, writeFile } from 'fs';
+import { dirname, join, resolve as resolvePath } from 'path';
 
 import * as argvAutoGlob from 'argv-auto-glob';
 import * as commander from 'commander';
+import * as ProgressBar from 'progress';
 import * as pack from '../../../package.json';
-import Project, { ClassDeclaration, ClassInstanceMemberTypes, Diagnostic, SourceFile } from 'ts-simple-ast';
+import Project, { ClassDeclaration, ClassInstanceMemberTypes, Diagnostic, SourceFile, ts } from 'ts-simple-ast';
 
 import { DiagramType } from '../enum/diagram-type.enum';
 import { EffectsParser } from './effects-parser.class';
 import { PumlGenerator } from './puml-generator.class';
 import { EffectExchangeTypes } from '../interface/effect-exchange-types.interface';
-import { DiagnosticCategory } from 'ts-simple-ast/dist/typescript/typescript';
+import { CompilerOptions, DiagnosticCategory } from 'ts-simple-ast/dist/typescript/typescript';
 
-const TARGET_EXT_NAME = 'puml';
+const SOURCE_ENCODING = 'utf8';
 const TARGET_ENCODING = 'utf8';
+const TARGET_EXT_NAME = 'puml';
 
 export class CliTool {
 
     private _project: Project;
+
+    private _progressBar: ProgressBar;
 
     private _sourceFiles: SourceFile[] = [];
 
@@ -25,7 +29,6 @@ export class CliTool {
 
     constructor() {
         this._registerCommands();
-        this._processCommand();
     }
 
     /**
@@ -35,7 +38,6 @@ export class CliTool {
     checkForErrors(parser: EffectsParser) {
         // check for diagnostics
         const diagnostics: Diagnostic[] = parser.getDiagnostics();
-        console.log(diagnostics.map(d => d.getCategory()))
         // check for errors only to discontinue parser
         if (diagnostics.some((diagnostic: Diagnostic) => diagnostic.getCategory() === DiagnosticCategory.Error)) {
             this._exitWithError(
@@ -45,7 +47,7 @@ export class CliTool {
                             .getMessageText()
                             .toString();
                     })
-                    .join()
+                    .join('\n')
             );
         }
 
@@ -61,7 +63,7 @@ export class CliTool {
                             .getMessageText()
                             .toString();
                     })
-                    .join()
+                    .join('\n')
             );
         }
     }
@@ -115,23 +117,39 @@ export class CliTool {
             this._exitWithError(`Unknown diagram type "${commander.diagram}". Use one of: "${diagramTypes.join('", "')}".`);
         }
 
-        // create a project
-        this._project = new Project({
-            // TODO: resolve the compiler options from the eventually extended base config (`extends`)
-            tsConfigFilePath: commander.config,
-            addFilesFromTsConfig: false
-        });
+        // resolve the compiler options from the eventually extended base config (`extends`)
+        this._loadConfig(commander.config)
+            .then((compilerOptions: CompilerOptions) => {
+                // create a project
+                this._project = new Project({
+                    compilerOptions,
+                    addFilesFromTsConfig: false
+                });
 
-        // add source file and keep reference
-        this._sourceFiles = [
-            ...commander.source,
-            // TODO: collect variadic source argument and remove quick fix, s. https://github.com/tj/commander.js/issues/571
-            // thus we have to merge all unresolved args as long as `source` is the only variadic argument
-            ...commander.args
-        ].map((sourcePath: string) => this._project.addExistingSourceFile(sourcePath));
+                // add source file and keep reference
+                this._sourceFiles = [
+                    ...commander.source,
+                    // TODO: collect variadic source argument and remove quick fix, s. https://github.com/tj/commander.js/issues/571
+                    // thus we have to merge all unresolved args as long as `source` is the only variadic argument
+                    ...commander.args
+                ].map((sourcePath: string) => this._project.addExistingSourceFile(sourcePath));
 
-        // instantiate puml generator with diagram type
-        this._pumlGenerator = new PumlGenerator(commander.diagram);
+                // instantiate progress bar
+                this._progressBar = new ProgressBar('[:bar] :current/:total (:percent) :target', {
+                    complete: '#',
+                    incomplete: ' ',
+                    total: this._sourceFiles.length,
+                    width: 50
+                });
+                this._progressBar.render({ target: '' });
+
+                // instantiate puml generator with diagram type
+                this._pumlGenerator = new PumlGenerator(commander.diagram);
+
+                // now we're set up to process the command
+                this._processCommand();
+            })
+            .catch((error) => this._exitWithError(error.toString()));
     }
 
     private _processCommand() {
@@ -158,9 +176,69 @@ export class CliTool {
         const sourceDirName = sourceFile.getDirectoryPath();
         const targetBaseName = sourceFile.getBaseNameWithoutExtension();
         const targetFilePath = join(sourceDirName, `${targetBaseName}.${TARGET_EXT_NAME}`);
+        const target = `- ${targetBaseName}`;
+
+        // update progress
+        this._progressBar.tick({ target });
 
         // write to target file
         return this._writeTarget(targetFilePath, activities);
+    }
+
+    /**
+     * reads the compiler options from a config and parses the result
+     * @param config
+     * @param {string} basepath
+     * @return {CompilerOptions}
+     * @private
+     */
+    private _getCompilerOptions(config: any, basepath: string): CompilerOptions {
+        return ts.convertCompilerOptionsFromJson(config, basepath).options;
+    }
+
+    /**
+     * resolves the compiler options from the eventually extended base config (`extends`)
+     * @param {string} path
+     * @param {CompilerOptions} extendingCompilerOptions
+     * @return {Promise<CompilerOptions>}
+     * @private
+     */
+    private _loadConfig(path: string, extendingCompilerOptions: CompilerOptions = {}): Promise<CompilerOptions> {
+        return new Promise<CompilerOptions>((resolve, reject) => {
+            readFile(path, SOURCE_ENCODING, ((error: NodeJS.ErrnoException, data: string) => {
+                if (error) {
+                    reject(error);
+                }
+
+                // read the config from data
+                const basepath = dirname(path);
+                const config = JSON.parse(data);
+                let compilerOptions: CompilerOptions = {};
+
+                if ('compilerOptions' in config) {
+                    compilerOptions = this._getCompilerOptions(config.compilerOptions, basepath);
+                }
+
+                // merge the eventually given extending configs
+                const mergedCompilerOptions = {
+                    ...compilerOptions,
+                    ...extendingCompilerOptions
+                };
+
+                // if the config extends another, load it
+                if ('extends' in config) {
+                    const extendedPath = resolvePath(basepath, config.extends);
+                    // TODO: how could we make this better? async / await? simply return?
+                    this._loadConfig(extendedPath, mergedCompilerOptions)
+                        .then(resolve)
+                        .catch(reject);
+                }
+                // or resolve the merged options
+                else {
+                    resolve(mergedCompilerOptions);
+                }
+            }));
+        });
     }
 
     private _writeTarget(filePath: string, content: string): Promise<true | Error> {
@@ -176,7 +254,8 @@ export class CliTool {
     }
 
     private _exitWithError(message: string) {
-        console.error(message);
+        this._progressBar.interrupt(message);
+        this._progressBar.terminate();
         process.exit(1);
     }
 

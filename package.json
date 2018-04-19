@@ -31,6 +31,7 @@
     "@types/commander": "2.12.2",
     "@types/mocha": "5.0.0",
     "@types/node": "9.6.5",
+    "@types/progress": "2.0.1",
     "chai": "4.1.2",
     "core-js": "2.5.5",
     "mocha": "5.1.0",
@@ -42,8 +43,9 @@
     "zone.js": "0.8.26"
   },
   "dependencies": {
-    "commander": "2.15.1",
     "argv-auto-glob": "1.0.1",
+    "commander": "2.15.1",
+    "progress": "2.0.0",
     "ts-simple-ast": "10.3.0"
   }
 }
