@@ -5,7 +5,7 @@ import * as argvAutoGlob from 'argv-auto-glob';
 import * as commander from 'commander';
 import * as ProgressBar from 'progress';
 import * as pack from '../../../package.json';
-import Project, { ClassDeclaration, ClassInstanceMemberTypes, Diagnostic, SourceFile, ts } from 'ts-simple-ast';
+import Project, { ClassInstanceMemberTypes, Diagnostic, SourceFile, ts } from 'ts-simple-ast';
 
 import { DiagramType } from '../enum/diagram-type.enum';
 import { EffectsParser } from './effects-parser.class';
@@ -75,12 +75,7 @@ export class CliTool {
      * @returns {EffectExchangeTypes[]}
      */
     getEffectExchangeTypes(parser: EffectsParser): EffectExchangeTypes[] {
-        const classDeclarations = parser.getClasses();
-        if (classDeclarations === undefined) {
-            this._exitWithError(`No class found in source file`);
-        }
-
-        const decoratedMembers = parser.getEffectDecoratedMembers(classDeclarations as ClassDeclaration[]);
+        const decoratedMembers = parser.getEffectDecoratedMembers();
         if (decoratedMembers === undefined) {
             this._exitWithError(`No effects found in source file`);
         }
@@ -171,7 +166,7 @@ export class CliTool {
     /**
      * process a given source file asynchronously
      * @param {SourceFile} sourceFile
-     * @return {Promise<true | Error>}
+     * @return {Promise<boolean | Error>}
      * @private
      */
     private _processSourceFile(sourceFile: SourceFile): Promise<true | Error> {
@@ -260,7 +255,7 @@ export class CliTool {
      * writes the result to the target path
      * @param {string} filePath
      * @param {string} content
-     * @return {Promise<true | Error>}
+     * @return {Promise<boolean | Error>}
      * @private
      */
     private _writeTarget(filePath: string, content: string): Promise<true | Error> {

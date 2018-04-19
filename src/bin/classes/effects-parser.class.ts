@@ -1,5 +1,14 @@
 import { Effect, ofType } from '@ngrx/effects';
-import { ClassDeclaration, ClassInstanceMemberTypes, Decorator, Diagnostic, Node, PropertyDeclaration, SourceFile, SyntaxKind, Type } from 'ts-simple-ast';
+import { ClassDeclaration, ClassInstanceMemberTypes, Decorator, Diagnostic, ExpressionWithTypeArguments, ImportDeclaration, Node, SourceFile, SyntaxKind, Type } from 'ts-simple-ast';
+import { CommandAction } from '../../classes/command-action.class';
+import { DocumentAction } from '../../classes/document-action.class';
+import { EventAction } from '../../classes/event-action.class';
+
+export const ACTION_CLASS_NAMES = [
+    CommandAction.name,
+    DocumentAction.name,
+    EventAction.name
+];
 
 export class EffectsParser {
 
@@ -22,24 +31,11 @@ export class EffectsParser {
     }
 
     /**
-     * get classes in source file
-     * @return {ClassDeclaration[] | undefined}
-     */
-    getClasses(): ClassDeclaration[] | undefined {
-        const classDeclarations = this._sourceFile.getClasses();
-        if (classDeclarations.length < 1) {
-            return undefined;
-        }
-
-        return classDeclarations;
-    }
-
-    /**
      * find members with `@Effect()` decorator
-     * @param {ClassDeclaration[]} classDeclarations
      * @return {ClassInstanceMemberTypes[]}
      */
-    getEffectDecoratedMembers(classDeclarations: ClassDeclaration[]): ClassInstanceMemberTypes[] | undefined {
+    getEffectDecoratedMembers(): ClassInstanceMemberTypes[] | undefined {
+        const classDeclarations = this._sourceFile.getClasses();
         const effectDecoratedMembers = classDeclarations.reduce((collectedEffectDecoratedMembers: ClassInstanceMemberTypes[], sourceFileClass: ClassDeclaration) => {
             const classMembers: ClassInstanceMemberTypes[] = sourceFileClass.getInstanceMembers();
             const effectDecoratedClassMembers: ClassInstanceMemberTypes[] = classMembers.filter((classMember: ClassInstanceMemberTypes) => {
@@ -85,7 +81,7 @@ export class EffectsParser {
      */
     getEffectName(effectDecoratedMember: ClassInstanceMemberTypes): string {
         return effectDecoratedMember
-            .getChildrenOfKind(SyntaxKind.Identifier)[0]
+            .getFirstChildByKindOrThrow(SyntaxKind.Identifier)
             .getText();
     }
 
@@ -95,10 +91,10 @@ export class EffectsParser {
      * @return {string[] | undefined}
      */
     getInputTypes(effectDecoratedMember: ClassInstanceMemberTypes): string[] | undefined {
-        let ofTypeNode: Node | undefined = undefined;
+        let ofTypeNode: Node | undefined;
 
         effectDecoratedMember
-        // get the assignemnt expression
+        // get the assignment expression
             .getChildrenOfKind(SyntaxKind.CallExpression)
             .forEach((pipeExpression: Node) => pipeExpression
                 // get the action operators
@@ -122,27 +118,55 @@ export class EffectsParser {
         const ofTypeChildren = (ofTypeNode as Node).getChildren();
         const ofTypeOpenIndex = ofTypeChildren.findIndex((node: Node) => node.getKind() === SyntaxKind.OpenParenToken);
 
+        if (ofTypeOpenIndex < 0) {
+            return undefined;
+        }
+
         // the types are right after the open paren (`(`)
         const inputTypeEnumValues = ofTypeChildren[ofTypeOpenIndex + 1]
             .getChildrenOfKind(SyntaxKind.PropertyAccessExpression)
             .map((node: Node) => node.getText());
 
-        // find the classes whose `type` property equals the string based enum value
-        const actionClasses = (this.getClasses() as ClassDeclaration[])
-            .filter((actionClass: ClassDeclaration) => actionClass.getProperty('type') !== undefined);
+        // search all imports for classes
+        const importedClasses = this._sourceFile.getImportDeclarations()
+            .reduce((collectedClasses: ClassDeclaration[], imported: ImportDeclaration) => [
+                ...collectedClasses,
+                ...imported.getModuleSpecifierSourceFileOrThrow()
+                    .getClasses()
+            ], []);
+        const localClasses = this._sourceFile.getClasses();
+
+        // combine the imported and the local classes
+        const actionClasses = [
+            ...importedClasses,
+            ...localClasses
+        ]
+        // find the classes which implement an action class
+            .filter((actionClass: ClassDeclaration) => {
+                const classImplementations = actionClass.getImplements();
+                return classImplementations.some((classImplementation: ExpressionWithTypeArguments) => {
+                    return ACTION_CLASS_NAMES.includes(classImplementation.getText());
+                });
+            });
 
         return inputTypeEnumValues.map((inputTypeEnumValue: string) => {
             // find the action class whose `type` property matches the enum value
             const actionTypeClass = actionClasses
                 .find((actionClass: ClassDeclaration) => {
-                    const typeProperty = actionClass.getProperty('type') as PropertyDeclaration;
-                    const typePropertyName = typeProperty.getChildrenOfKind(SyntaxKind.PropertyAccessExpression)[0].getText();
+                    const typeProperty = actionClass.getPropertyOrThrow('type');
+                    const typePropertyName = typeProperty.getFirstChildByKindOrThrow(SyntaxKind.PropertyAccessExpression)
+                        .getText();
                     return typePropertyName === inputTypeEnumValue;
-                }) as ClassDeclaration;
+                });
+
+            if (actionTypeClass === undefined) {
+                console.error('no class found for', inputTypeEnumValue);
+                return inputTypeEnumValue;
+            }
 
             // the name of the class is needed
             return actionTypeClass
-                .getChildrenOfKind(SyntaxKind.Identifier)[0]
+                .getFirstChildByKindOrThrow(SyntaxKind.Identifier)
                 .getText();
         });
     }
