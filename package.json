@@ -10,7 +10,8 @@
   "scripts": {
     "build": "tsc",
     "start": "ts-node src/bin/index.ts",
-    "test": "mocha -r ts-node/register test/**/*.spec.ts"
+    "test": "mocha -r ts-node/register test/**/*.spec.ts",
+    "test:example": "npm run start -- --config test/test.tsconfig.json --source test/test.effects.ts"
   },
   "author": "David Enke <david.enke@zalari.de>",
   "license": "MIT",
