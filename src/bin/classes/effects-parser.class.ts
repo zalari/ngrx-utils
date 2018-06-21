@@ -94,6 +94,8 @@ export class EffectsParser {
         let ofTypeNode: Node | undefined;
         let ofTypeChildren: Node[] = [];
 
+        console.log('effectDecoratedMember', effectDecoratedMember)
+
         effectDecoratedMember
         // get the assignment expression
             .getChildrenOfKind(SyntaxKind.CallExpression)

@@ -15,6 +15,7 @@ export enum LayoutCommandTypes {
     CloseSidenav = '[Layout] Close Sidenav',
     LogSidenav = '[Layout] Log Sidenav'
 }
+
 export enum LayoutEventTypes {
     SidenavOpened = '[Layout] Sidenav Opened',
     SidenavClosed = '[Layout] Sidenav Closed',
@@ -92,21 +93,21 @@ export const isSidenavVisible = (state: State) => state.showSidenav;
 export class LayoutEffects {
 
     @Effect()
-    @_FilteringDecider()
+    @_FilteringDecider(OpenSidenavCommand, SidenavOpenedEvent)
     SIDENAV_OPENED: Observable<SidenavOpenedEvent> = this._actions.pipe(
-        ofType<LayoutCommands>(LayoutCommandTypes.OpenSidenav),
+        ofType<OpenSidenavCommand>(LayoutCommandTypes.OpenSidenav),
         map(() => new SidenavOpenedEvent())
     );
 
     @Effect()
-    @_FilteringDecider()
+    @_FilteringDecider(CloseSidenavCommand, SidenavClosedEvent)
     SIDENAV_CLOSED: Observable<SidenavClosedEvent> = this._actions.pipe(
-        ofType<LayoutCommands>(LayoutCommandTypes.CloseSidenav),
+        ofType<CloseSidenavCommand>(LayoutCommandTypes.CloseSidenav),
         map(() => new SidenavClosedEvent())
     );
 
     @Effect()
-    @_SplitterDecider()
+    @_SplitterDecider(CloseSidenavCommand, [SidenavClosedEvent, LogSidenavCommand])
     WEIRD_SIDENAV: Observable<SidenavClosedEvent | LogSidenavCommand> = this._actions.pipe(
         ofType<LayoutCommands>(LayoutCommandTypes.CloseSidenav),
         concatMap(() => [
@@ -116,7 +117,7 @@ export class LayoutEffects {
     );
 
     @Effect()
-    @_AggregatorDecider()
+    @_AggregatorDecider([OpenSidenavCommand, CloseSidenavCommand], SidenavToggledEvent)
     ALL_SIDENAV: Observable<SidenavToggledEvent> = this._actions.pipe(
         ofType<LayoutCommands>(
             LayoutCommandTypes.OpenSidenav,
@@ -125,5 +126,6 @@ export class LayoutEffects {
         map(() => new SidenavToggledEvent())
     );
 
-    constructor(private _actions: Actions) {}
+    constructor(private _actions: Actions) {
+    }
 }

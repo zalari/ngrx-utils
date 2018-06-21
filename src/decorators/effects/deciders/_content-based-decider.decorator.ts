@@ -1,3 +1,3 @@
-export function _ContentBasedDecider(optional?: any): Function {
-    return function(constructor: Function) {};
+export function _ContentBasedDecider(from?, to?: any[]): Function {
+    return function (constructor: Function) {};
 }

@@ -1,3 +1,3 @@
-export function _AggregatorDecider(optional?: any): Function {
+export function _AggregatorDecider(from?: any[], to?: any): Function {
     return function(constructor: Function) {};
 }
