@@ -3,6 +3,7 @@ import { EffectExchangeTypes } from '../interface/effect-exchange-types.interfac
 import { Generator } from '../interface/puml-generator.interface';
 import { PumlActivityGenerator } from './puml-activity-generator.class';
 import { PumlSequenceGenerator } from './puml-sequence-generator.class';
+import { PumlActivityGeneratorV2 } from './puml-activity-generator-v2.class';
 
 export class PumlGenerator implements Generator {
 
@@ -20,7 +21,8 @@ export class PumlGenerator implements Generator {
         switch (this._diagramType) {
             default:
             case DiagramType.Activity:
-                generator = new PumlActivityGenerator();
+                // generator = new PumlActivityGenerator();
+                generator = new PumlActivityGeneratorV2();
                 break;
 
             case DiagramType.Sequence:
