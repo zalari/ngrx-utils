@@ -26,7 +26,6 @@ export class PumlActivityGeneratorV2 implements Generator {
     private _generateEntry(effect: EffectExchangeTypes): string {
         const inputActions = effect.inputTypes;
         const outputActions = effect.outputTypes;
-        console.log('I should draw effect:', effect);
 
         // take the actual (first) tagging decorator and load
         // TODO: add sanity check
@@ -41,7 +40,7 @@ export class PumlActivityGeneratorV2 implements Generator {
             .compile(template)({
                 inputActions,
                 outputActions,
-                effectName: ''
+                effectName: effect.memberName
             })
             // remove @startml and @enduml
             .replace('@startuml', '')

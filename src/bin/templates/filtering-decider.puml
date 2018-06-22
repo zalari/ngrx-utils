@@ -1,7 +1,7 @@
 @startuml
 |In|
 start
--> EFFECT_FUNCTION_NAME;
+-> {{effectName}};
 :Action>
 |Out|
 :Action>
