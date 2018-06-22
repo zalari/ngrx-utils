@@ -5,11 +5,17 @@ start
 :{{firstEntry inputActions}}>
 |Out|
 fork
-:Action1>
+':Action1>
+'stop
+'fork again
+':Action2>
+'stop
+{{#each outputActions}}
+:{{this}}>
 stop
+{{#unless @last}}
 fork again
-:Action2>
-stop
+{{/unless}}
+{{/each}}
 end fork
-stop
 @enduml

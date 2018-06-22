@@ -4,14 +4,22 @@ start
 -> {{effectName}};
 :{{firstEntry inputActions}}>
 |Out|
-if (action.payload) then (content 1)
-  :Action1>
+{{#each outputActions}}
+{{#if @first}}
+if (action.payload) then (content {{@index}})
+  :{{this}}>
   stop
-elseif (action.payload) then (content 2)
-  :Action2>
+{{else}}
+  {{#unless @last}}
+    elseif (action.payload) then (content {{@index}})
+  {{else}}
+    else (else)
+  {{/unless}}
+  :{{this}}>
   stop
-else (else)
-  :Action3>
-  stop
+{{/if}}
+{{#if @last}}
 endif
+{{/if}}
+{{/each}}
 @enduml

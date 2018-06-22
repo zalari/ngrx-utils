@@ -233,9 +233,9 @@ export class EffectsParser {
    * @returns {string[]}
    */
   getInputActionsFromDecorator(effectDecoratedMember: ClassInstanceMemberTypes): string[] | undefined {
-    console.log('inputAction for effectDecorated', effectDecoratedMember);
+    // console.log('inputAction for effectDecorated', effectDecoratedMember);
     // TODO: implement me
-    return ['ActionCommand'];
+    return ['ActionCommand1', 'ActionCommand2', 'ActionCommand2'];
   }
 
   /**
@@ -245,7 +245,7 @@ export class EffectsParser {
    */
   getOutputActionsFromDecorator(effectDecoratedMember: ClassInstanceMemberTypes): string[] | undefined {
     // TODO: implement me
-    return ['ActionEvent'];
+    return ['ActionEvent1', 'ActionEvent2', 'ActionEvent3'];
   }
 
 }
