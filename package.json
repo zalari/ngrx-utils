@@ -8,7 +8,7 @@
   "repository": "github:zalari/ngrx-utils",
   "bin": "dist/bin/index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "shx rm -rf dist/ && npm-install-peers && tsc",
     "start": "ts-node src/bin/index.ts",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "test:example": "npm run start -- --config test/test.tsconfig.json --source test/test.effects.ts"
@@ -16,18 +16,10 @@
   "author": "David Enke <david.enke@zalari.de>",
   "license": "MIT",
   "peerDependencies": {
-    "@angular/core": "^5.1.1",
     "@ngrx/effects": "^5.1.0",
-    "@ngrx/store": "^5.1.0",
-    "core-js": "^2.5.1",
-    "rxjs": "^5.5.10",
-    "typescript": "^2.4.2",
-    "zone.js": "^0.8.18"
+    "@ngrx/store": "^5.1.0"
   },
   "devDependencies": {
-    "@angular/core": "5.2.9",
-    "@ngrx/effects": "5.2.0",
-    "@ngrx/store": "5.2.0",
     "@types/chai": "4.1.2",
     "@types/commander": "2.12.2",
     "@types/handlebars": "4.0.38",
@@ -38,8 +30,10 @@
     "chai": "4.1.2",
     "core-js": "2.5.5",
     "mocha": "5.1.0",
+    "npm-install-peers": "1.2.1",
     "rxjs": "5.5.10",
     "rxjs-tslint-rules": "3.17.0",
+    "shx": "0.3.0",
     "ts-node": "5.0.1",
     "tslint": "5.9.1",
     "typescript": "2.8.1",
