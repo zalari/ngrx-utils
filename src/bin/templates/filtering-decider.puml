@@ -1,0 +1,9 @@
+@startuml
+|In|
+start
+-> EFFECT_FUNCTION_NAME;
+:Action>
+|Out|
+:Action>
+stop
+@enduml
