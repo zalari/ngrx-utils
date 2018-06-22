@@ -18,4 +18,5 @@ fork again
 {{/unless}}
 {{/each}}
 end fork
+stop
 @enduml
