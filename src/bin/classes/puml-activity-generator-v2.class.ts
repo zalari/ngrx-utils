@@ -9,7 +9,7 @@ import * as handlebars from 'handlebars';
 // add firstEntry helper
 // deliberately use a function, because the this context in the helper fn is set by handlebars
 /* tslint:disable-next-line:only-arrow-functions */
-handlebars.registerHelper('firstEntry', function(list: any[]) {
+handlebars.registerHelper('firstEntry', function (list: any[]) {
   const [first, ...rest] = list;
   return first;
 });
@@ -35,9 +35,20 @@ export class PumlActivityGeneratorV2 implements Generator {
     const inputActions = effect.inputTypes;
     const outputActions = effect.outputTypes;
 
+
+    // nasty runtime-safe-guard to prevent tsc from compiling
+    // TODO: fix passing undefined and only do the magic on actual annotated effects...
+    const assertNoUndef = (effect: any) => {
+      if (effect.taggingDecorators) {
+        return effect.taggingDecorators;
+      } else {
+        throw new Error('Sorryz!');
+      }
+    };
     // take the actual (first) tagging decorator and load
     // TODO: add sanity check
-    const taggingDecorator = effect.taggingDecorators.shift()
+    const taggingDecorator = assertNoUndef(effect)
+      .shift()
       .replace('_', '');
     // TODO: add .hbs to templates
     const taggingDecoratorTemplateFile = _.kebabCase(taggingDecorator) + '.puml';
