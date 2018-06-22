@@ -1,8 +1,5 @@
 import { EffectExchangeTypes } from '../interface/effect-exchange-types.interface';
 import { Generator } from '../interface/puml-generator.interface';
-import { ActivityJoinSyntax } from '../enum/activity-join-syntax.enum';
-import { ActivityType } from '../enum/activity-type.enum';
-import { ArrowType } from '../enum/arrow-type.enum';
 
 import * as fs from 'fs';
 import * as _ from 'lodash';
@@ -27,11 +24,12 @@ export class PumlActivityGeneratorV2 implements Generator {
      * @private
      */
     private _generateEntry(effect: EffectExchangeTypes): string {
-        let inputActions = effect.inputTypes;
-        let outputActions = effect.outputTypes;
+        const inputActions = effect.inputTypes;
+        const outputActions = effect.outputTypes;
         console.log('I should draw effect:', effect);
 
         // take the actual (first) tagging decorator and load
+        // TODO: add sanity check
         const taggingDecorator = effect.taggingDecorators.shift().replace('_', '');
         // TODO: add .hbs to templates
         const taggingDecoratorTemplateFile = _.kebabCase(taggingDecorator) + '.puml';
