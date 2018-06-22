@@ -1,14 +1,14 @@
 {
   "name": "@zalari/ngrx-utils",
   "description": "A library containing tagging decorators for @ngrx to help implementing the Nrwl conventions for @ngrx/effects.",
-  "version": "0.0.7-SNAPSHOT",
+  "version": "0.0.7",
   "publishConfig": {
     "access": "public"
   },
   "repository": "github:zalari/ngrx-utils",
   "bin": "dist/bin/index.js",
   "scripts": {
-    "build": "shx rm -rf dist/ && npm-install-peers && tsc",
+    "build": "shx rm -rf dist/ && tsc",
     "start": "ts-node src/bin/index.ts",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "test:example": "npm run start -- --config test/test.tsconfig.json --source test/test.effects.ts"
@@ -33,7 +33,6 @@
     "chai": "4.1.2",
     "core-js": "2.5.5",
     "mocha": "5.1.0",
-    "npm-install-peers": "1.2.1",
     "rxjs": "5.5.10",
     "rxjs-tslint-rules": "3.17.0",
     "shx": "0.3.0",
