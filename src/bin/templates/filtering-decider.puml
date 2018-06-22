@@ -2,8 +2,8 @@
 |In|
 start
 -> {{effectName}};
-:Action>
+: {{firstEntry inputActions}} >
 |Out|
-:Action>
+: {{firstEntry outputActions}} >
 stop
 @enduml

@@ -4,9 +4,9 @@ start
 -> {{effectName}};
 if (action.type) then (Action1)
   |Out|
-  :Action>
+  :{{firstEntry outputActions}}>
 else (Action2)
-  :Action>
+  :{{firstEntry outputActions}}>
 endif
 detach
 @enduml

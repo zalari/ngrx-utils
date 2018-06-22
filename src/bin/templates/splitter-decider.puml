@@ -2,7 +2,7 @@
 |In|
 start
 -> {{effectName}};
-:Action>
+:{{firstEntry inputActions}}>
 |Out|
 fork
 :Action1>

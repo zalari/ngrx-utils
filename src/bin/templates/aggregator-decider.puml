@@ -8,6 +8,6 @@ fork again
 :Action2>
 end fork
 |Out|
-:Action3>
+:{{firstEntry outputActions}}>
 stop
 @enduml

@@ -2,7 +2,7 @@
 |In|
 start
 -> {{effectName}};
-:Action>
+:{{firstEntry inputActions}}>
 |Out|
 if (context) then (content 1)
   :Action1>

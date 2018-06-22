@@ -4,7 +4,15 @@ import { Generator } from '../interface/puml-generator.interface';
 import * as fs from 'fs';
 import * as _ from 'lodash';
 import * as handlebars from 'handlebars';
-import * as helpers from 'handlebars-helpers';
+// import * as helpers from 'handlebars-helpers';
+
+// add firstEntry helper
+// deliberately use a function, because the this context in the helper fn is set by handlebars
+/* tslint:disable-next-line:only-arrow-functions */
+handlebars.registerHelper('firstEntry', function(list: any[]) {
+  const [first, ...rest] = list;
+  return first;
+});
 
 export class PumlActivityGeneratorV2 implements Generator {
 
