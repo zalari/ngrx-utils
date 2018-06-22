@@ -1,10 +1,11 @@
 import { Effect, ofType } from '@ngrx/effects';
 import {
+  ArrayLiteralExpression,
   ClassDeclaration,
   ClassInstanceMemberTypes,
   Decorator,
   Diagnostic,
-  ExpressionWithTypeArguments,
+  ExpressionWithTypeArguments, Identifier,
   ImportDeclaration,
   Node,
   SourceFile,
@@ -233,9 +234,15 @@ export class EffectsParser {
    * @returns {string[]}
    */
   getInputActionsFromDecorator(effectDecoratedMember: ClassInstanceMemberTypes): string[] | undefined {
-    // console.log('inputAction for effectDecorated', effectDecoratedMember);
-    // TODO: implement me
-    return ['ActionCommand1', 'ActionCommand2', 'ActionCommand2'];
+    // find the first matching taggingDecorator
+    const taggingDecorator = this.getTaggingDecoratorOrThrow(effectDecoratedMember);
+    const args = taggingDecorator.getArguments();
+    if (!args || args.length !== 2) {
+      return undefined;
+    } else {
+      // inputTypes are in the first Argument...
+      return this.getNamesFromArgumentOrThrow(taggingDecorator.getArguments()[0]);
+    }
   }
 
   /**
@@ -244,8 +251,39 @@ export class EffectsParser {
    * @returns {string[]}
    */
   getOutputActionsFromDecorator(effectDecoratedMember: ClassInstanceMemberTypes): string[] | undefined {
-    // TODO: implement me
-    return ['ActionEvent1', 'ActionEvent2', 'ActionEvent3'];
+    // find the first matching taggingDecorator
+    const taggingDecorator = this.getTaggingDecoratorOrThrow(effectDecoratedMember);
+    const args = taggingDecorator.getArguments();
+    if (!args || args.length !== 2) {
+      return undefined;
+    } else {
+      // inputTypes are in the first Argument...
+      return this.getNamesFromArgumentOrThrow(taggingDecorator.getArguments()[1]);
+    }
   }
+
+  getTaggingDecoratorOrThrow(effectDecoratedMember: ClassInstanceMemberTypes): Decorator {
+    // we assume, that there are only "our" taggingDecorator and therefore we simply return the first, whose
+    // name is not Effect
+    const taggingDecorator = effectDecoratedMember.getDecorators()
+      .find(decorator => decorator.getName() !== Effect.name);
+    if (taggingDecorator) {
+      return taggingDecorator;
+    } else {
+      throw new Error('TaggingDecorator not found');
+    }
+  }
+
+  getNamesFromArgumentOrThrow(argument: Node): string[] {
+    // the passed node is (in our case) either an Identifier or an ArrayLiteralExpression
+    if (argument instanceof Identifier) {
+      return [argument.getText()];
+    } else if (argument instanceof ArrayLiteralExpression) {
+      return argument.getElements().map(element => element.getText());
+    } else {
+      throw new Error('Invalid Argument Type for TaggingDecorator');
+    }
+  }
+
 
 }
