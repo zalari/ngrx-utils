@@ -1,3 +1,3 @@
 export function _FilteringDecider(from?, to?): Function {
-    return function (constructor: Function) {};
+  return function (constructor: Function) {};
 }

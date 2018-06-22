@@ -1,4 +1,4 @@
 export enum ActivityJoinSyntax {
-    Fork = 'fork',
-    Split = 'split'
+  Fork = 'fork',
+  Split = 'split'
 }
