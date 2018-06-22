@@ -1,0 +1,22 @@
+@startuml
+|In|
+start
+-> {{effectName}};
+'fork
+':Action1>
+'fork again
+':Action2>
+'end fork
+fork
+{{#each inputActions}}
+:{{this}}>
+{{#unless @last}}
+  fork again
+{{else}}
+  end fork
+{{/unless}}
+{{/each}}
+|Out|
+:{{firstEntry outputActions}}>
+stop
+@enduml

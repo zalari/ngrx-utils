@@ -1,3 +1,3 @@
-export function _SplitterDecider(optional?: any): Function {
-    return function(constructor: Function) {};
+export function _SplitterDecider(from?: any, to?: any[]): Function {
+  return function (constructor: Function) {};
 }

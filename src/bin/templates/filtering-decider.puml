@@ -1,0 +1,9 @@
+@startuml
+|In|
+start
+-> {{effectName}};
+: {{firstEntry inputActions}} >
+|Out|
+: {{firstEntry outputActions}} >
+stop
+@enduml

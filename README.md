@@ -67,11 +67,11 @@ The options can be shown by running `ngrx-utils --help`:
 ```
 
 ### Example using the test data
-A simple test case is: `ngrx-utils --config test/test.tsconfig.json --source test/test.effects.ts`.
-Globbing source files: `ngrx-utils --config test/test.tsconfig.json --source **/*.effects.ts`.
-Extended tsconfig.json: `ngrx-utils --config test/test-extending.tsconfig.json --source **/*.effects.ts`.
+* A simple test case is: `ngrx-utils --config test/test.tsconfig.json --source test/test.effects.ts`.
+* Globbing source files: `ngrx-utils --config test/test.tsconfig.json --source **/*.effects.ts`.
+* Extended tsconfig.json: `ngrx-utils --config test/test-extending.tsconfig.json --source **/*.effects.ts`.
 
-By default the [Angular CLI][@angular/angular-cli] creates a base `tsconfig.json` in the root directory which is extended by specific
+> By default the [Angular CLI][@angular/angular-cli] creates a base `tsconfig.json` in the root directory which is extended by specific
 config files in the `src` folder (e.g. `tsconfig.app.json`) by using the `extends` property. The CLI tool recognizes this property and
 loads all extended configs recursively and merges the `compilerOptions`.
 

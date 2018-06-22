@@ -1,0 +1,12 @@
+@startuml
+|In|
+start
+-> {{effectName}};
+if (action.type) then (Action1)
+  |Out|
+  :{{firstEntry outputActions}}>
+else (Action2)
+  :{{firstEntry outputActions}}>
+endif
+detach
+@enduml

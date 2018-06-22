@@ -1,5 +1,6 @@
 import { Observable } from 'rxjs/Observable';
-import { concatMap, map } from 'rxjs/operators';
+import { of as observableOf } from 'rxjs/observable/of';
+import { concatMap, map, switchMap } from 'rxjs/operators';
 
 import { Actions, Effect, ofType } from '@ngrx/effects';
 
@@ -8,122 +9,324 @@ import { EventAction } from '../src/classes/event-action.class';
 import { _AggregatorDecider } from '../src/decorators/effects/deciders/_aggregator-decider.decorator';
 import { _SplitterDecider } from '../src/decorators/effects/deciders/_splitter-decider.decorator';
 import { _FilteringDecider } from '../src/decorators/effects/deciders/_filtering-decider.decorator';
+import { _Command } from '../src/decorators/actions/_command.decorator';
+import { _Event } from '../src/decorators/actions/_event.decorator';
+import { DocumentAction } from '../src/classes/document-action.class';
+import { _Document } from '../src/decorators/actions/_document.decorator';
+import { Action } from '@ngrx/store';
+import { _ContentBasedDecider } from '../src/decorators/effects/deciders/_content-based-decider.decorator';
+import { _ContextBasedDecider } from '../src/decorators/effects/deciders/_context-based-decider.decorator';
 
-// actions
-export enum LayoutCommandTypes {
-    OpenSidenav = '[Layout] Open Sidenav',
-    CloseSidenav = '[Layout] Close Sidenav',
-    LogSidenav = '[Layout] Log Sidenav'
-}
-export enum LayoutEventTypes {
-    SidenavOpened = '[Layout] Sidenav Opened',
-    SidenavClosed = '[Layout] Sidenav Closed',
-    SidenavToggled = '[Layout] Sidenav toggled'
-}
+// Define Actions by using Classes and discriminated union types
 
-// commands
-export class OpenSidenavCommand implements CommandAction {
-    readonly type = LayoutCommandTypes.OpenSidenav;
-}
-
-export class CloseSidenavCommand implements CommandAction {
-    readonly type = LayoutCommandTypes.CloseSidenav;
-}
-
-export class LogSidenavCommand implements CommandAction {
-    readonly type = LayoutCommandTypes.LogSidenav;
+// discriminators for commands
+enum TodoCommandTypes {
+  AddTodo = '[Todo] ADD_TODO',
+  RequestAddTodo = '[Todo] REQUEST_ADD_TODO',
+  RemoveTodo = '[Todo] REMOVE_TODO',
+  AppendTodo = '[Todo] APPEND_TODO',
+  InsertTodo = '[Todo] INSERT_TODO',
+  RemoveTodoWithConfirmation = '[Todo] REMOVE_TODO_WITH_CONFIRMATION',
+  RemoveTodoWithoutConfirmation = '[Todo] REMOVE_TODO_WITHOUT_CONFIRMATION',
+  LoadTodos = '[Todo] LOAD_TODOS'
 }
 
-// events
-export class SidenavOpenedEvent implements EventAction {
-    readonly type = LayoutEventTypes.SidenavOpened;
+enum GenericCommandTypes {
+  LogAction = '[NgRx] LOG_ACTION'
 }
 
-export class SidenavClosedEvent implements EventAction {
-    readonly type = LayoutEventTypes.SidenavClosed;
+// ...for events
+enum TodoEventTypes {
+  TodoAdded = '[Todo] TODO_ADDED',
+  TodoRemoved = '[Todo] TODO_REMOVED',
+  TodosLoaded = '[Todo] TODOS_LOADED'
 }
 
-export class SidenavToggledEvent implements EventAction {
-    readonly type = LayoutEventTypes.SidenavToggled;
+// and for documents
+enum TodoDocumentTypes {
+  Todos = '[Todo] TODOS_DOCUMENT'
 }
 
-export type LayoutCommands = OpenSidenavCommand | CloseSidenavCommand | LogSidenavCommand;
-export type LayoutEvents = SidenavOpenedEvent | SidenavClosedEvent | SidenavToggledEvent;
+// Commands
+@_Command()
+class TodoAddTodoCommand extends CommandAction {
+  readonly type = TodoCommandTypes.AddTodo;
+
+  constructor(public payload: { todo: Partial<Todo>, addLast?: boolean }) {
+    super();
+  }
+}
+
+@_Command()
+class TodoRemoveTodoCommand extends CommandAction {
+  readonly type = TodoCommandTypes.RemoveTodo;
+
+  constructor(public payload: { id: string }) {
+    super();
+  }
+}
+
+@_Command()
+class TodoAppendTodoCommand extends CommandAction {
+  readonly type = TodoCommandTypes.AppendTodo;
+
+  constructor(public payload: { todo: Partial<Todo> }) {
+    super();
+  }
+}
+
+@_Command()
+class TodoInsertTodoCommand extends CommandAction {
+  readonly type = TodoCommandTypes.InsertTodo;
+
+  constructor(public payload: { todo: Partial<Todo> }) {
+    super();
+  }
+}
+
+@_Command()
+class TodoRemoveWithConfirmationCommand extends CommandAction {
+  readonly type = TodoCommandTypes.RemoveTodoWithConfirmation;
+
+  constructor(public payload: { id: string }) {
+    super();
+  }
+}
+
+@_Command()
+class TodoRemoveWithoutConfirmationCommand extends CommandAction {
+  readonly type = TodoCommandTypes.RemoveTodoWithoutConfirmation;
+
+  constructor(public payload: { id: string }) {
+    super();
+  }
+}
+
+@_Command()
+class TodoLoadCommand extends CommandAction {
+  readonly type = TodoCommandTypes.LoadTodos;
+}
+
+// generic commands
+@_Command()
+class LogActionCommand extends CommandAction {
+  readonly type = GenericCommandTypes.LogAction;
+
+  constructor(public payload: { action: Action }) {
+    super();
+  }
+}
+
+@_Command()
+class TodoRequestAddTodoCommand extends CommandAction {
+  readonly type = TodoCommandTypes.RequestAddTodo;
+
+  constructor(public payload: { todo: Partial<Todo>, addLast: boolean }) {
+    super();
+  }
+}
+
+// Events
+@_Event()
+class TodoAddedEvent extends EventAction {
+  readonly type = TodoEventTypes.TodoAdded;
+
+  constructor(public payload: { todo: Partial<Todo>, addLast?: boolean }) {
+    super();
+  }
+}
+
+@_Event()
+class TodoRemovedEvent extends EventAction {
+  readonly type = TodoEventTypes.TodoRemoved;
+
+  constructor(public payload: { id: string }) {
+    super();
+  }
+}
+
+@_Event()
+class TodosLoadedEvent extends EventAction {
+  readonly type = TodoEventTypes.TodosLoaded;
+
+  constructor(public payload: { todos: Todo[] }) {
+    super();
+  }
+}
+
+// Documents
+@_Document()
+class TodosDocument extends DocumentAction {
+  readonly type = TodoDocumentTypes.Todos;
+
+  constructor(public payload: Todo[]) {
+    super();
+  }
+}
+
+// Union types for Action categories
+type TodoCommands =
+  TodoAddTodoCommand |
+  TodoRemoveTodoCommand |
+  TodoLoadCommand |
+  TodoRemoveWithConfirmationCommand |
+  TodoRemoveWithoutConfirmationCommand |
+  TodoAppendTodoCommand |
+  TodoInsertTodoCommand |
+  never;
+
+type TodoEvents =
+  TodoAddedEvent |
+  TodoRemovedEvent |
+  TodosLoadedEvent |
+  never;
+
+type TodoDocuments =
+  TodosDocument |
+  never;
+
+type TodoActions = TodoCommands | TodoEvents | TodoDocuments;
+
+// Payload Types
+interface Todo {
+  id: string;
+  content: string;
+}
 
 // state
-export interface State {
-    showSidenav: boolean;
+interface State {
+  todos: Todo[];
 }
 
 const initialState: State = {
-    showSidenav: false
+  todos: []
 };
 
-// reducer
-export function reducer(
-    state: State = initialState,
-    action: LayoutEvents
-): State {
-    switch (action.type) {
-        case LayoutEventTypes.SidenavClosed:
-            return {
-                ...state,
-                showSidenav: false
-            };
-
-        case LayoutEventTypes.SidenavOpened:
-            return {
-                ...state,
-                showSidenav: true
-            };
-
-        case LayoutEventTypes.SidenavToggled:
-            return state;
-
-        default:
-            return state;
-    }
+// Reducer
+function reducer(state: State = initialState,
+                 action: any): State {
+  return state;
 }
 
-// selectors
-export const isSidenavVisible = (state: State) => state.showSidenav;
+// Selectors
+// const isSideNavVisible = (state: State) => state.showSideNav;
 
-// effects
-export class LayoutEffects {
+// simulate environment
 
-    @Effect()
-    @_FilteringDecider()
-    SIDENAV_OPENED: Observable<SidenavOpenedEvent> = this._actions.pipe(
-        ofType<LayoutCommands>(LayoutCommandTypes.OpenSidenav),
-        map(() => new SidenavOpenedEvent())
-    );
+const environment = {
+  showConfirmation: false
+};
 
-    @Effect()
-    @_FilteringDecider()
-    SIDENAV_CLOSED: Observable<SidenavClosedEvent> = this._actions.pipe(
-        ofType<LayoutCommands>(LayoutCommandTypes.CloseSidenav),
-        map(() => new SidenavClosedEvent())
-    );
+// Effects
+class TodoEffects {
 
-    @Effect()
-    @_SplitterDecider()
-    WEIRD_SIDENAV: Observable<SidenavClosedEvent | LogSidenavCommand> = this._actions.pipe(
-        ofType<LayoutCommands>(LayoutCommandTypes.CloseSidenav),
-        concatMap(() => [
-            new SidenavClosedEvent(),
-            new LogSidenavCommand()
-        ])
-    );
+  @_FilteringDecider(TodoLoadCommand, TodosLoadedEvent)
+  @Effect()
+  LOAD_TODOS: Observable<TodosLoadedEvent> = this.actions.pipe(
+    ofType<TodoLoadCommand>(TodoCommandTypes.LoadTodos),
+    switchMap(action => observableOf([])),
+    map(todos => new TodosLoadedEvent({ todos }))
+  );
 
-    @Effect()
-    @_AggregatorDecider()
-    ALL_SIDENAV: Observable<SidenavToggledEvent> = this._actions.pipe(
-        ofType<LayoutCommands>(
-            LayoutCommandTypes.OpenSidenav,
-            LayoutCommandTypes.CloseSidenav
-        ),
-        map(() => new SidenavToggledEvent())
-    );
+  @_FilteringDecider(TodosLoadedEvent, TodosDocument)
+  @Effect()
+  SET_LOADED_TODOS: Observable<TodosDocument> = this.actions.pipe(
+    ofType<TodosLoadedEvent>(TodoEventTypes.TodosLoaded),
+    map(action => {
+      const { todos } = action.payload;
+      return new TodosDocument(todos);
+    })
+  );
 
-    constructor(private _actions: Actions) {}
+  @_ContentBasedDecider(TodoAddTodoCommand, [TodoInsertTodoCommand, TodoAppendTodoCommand])
+  @Effect()
+  ADD_TODO: Observable<TodoInsertTodoCommand | TodoAppendTodoCommand> = this.actions.pipe(
+    ofType<TodoAddTodoCommand>(TodoCommandTypes.AddTodo),
+    map(action => {
+      const { addLast, todo } = action.payload;
+      if (addLast) {
+        return new TodoAppendTodoCommand({ todo });
+      } else {
+        return new TodoInsertTodoCommand({ todo });
+      }
+    })
+  );
+
+  @_ContextBasedDecider(TodoRemoveTodoCommand, [TodoRemoveWithoutConfirmationCommand, TodoRemoveWithConfirmationCommand])
+  @Effect()
+  REMOVE_TODO: Observable<TodoRemoveWithoutConfirmationCommand | TodoRemoveWithConfirmationCommand> = this.actions.pipe(
+    ofType<TodoRemoveTodoCommand>(TodoCommandTypes.RemoveTodo),
+    map(action => {
+      const { id } = action.payload;
+      if (environment.showConfirmation) {
+        return new TodoRemoveWithConfirmationCommand({ id });
+      } else {
+        return new TodoRemoveWithoutConfirmationCommand({ id });
+      }
+    })
+  );
+
+  @_FilteringDecider(TodoAppendTodoCommand, TodoAddedEvent)
+  @Effect()
+  APPEND_TODO: Observable<TodoAddedEvent> = this.actions.pipe(
+    ofType<TodoAppendTodoCommand>(TodoCommandTypes.AppendTodo),
+    map(action => {
+      const { todo } = action.payload;
+      return new TodoAddedEvent({ todo, addLast: true });
+    })
+  );
+
+  @_FilteringDecider(TodoInsertTodoCommand, TodoAddedEvent)
+  @Effect()
+  INSERT_TODO: Observable<TodoAddedEvent> = this.actions.pipe(
+    ofType<TodoAppendTodoCommand>(TodoCommandTypes.AppendTodo),
+    map(action => {
+      const { todo } = action.payload;
+      return new TodoAddedEvent({ todo, addLast: true });
+    })
+  );
+
+  @_FilteringDecider(TodoRemoveWithoutConfirmationCommand, TodoRemovedEvent)
+  @Effect()
+  REMOVE_TODO_WITHOUT_CONFIRM: Observable<TodoRemovedEvent> = this.actions.pipe(
+    ofType<TodoRemoveWithoutConfirmationCommand>(TodoCommandTypes.RemoveTodoWithoutConfirmation),
+    map(action => {
+      const { id } = action.payload;
+      return new TodoRemovedEvent({ id });
+    })
+  );
+
+  @_FilteringDecider(TodoRemoveWithConfirmationCommand, TodoRemovedEvent)
+  @Effect()
+  REMOVE_TODO_WITH_CONFIRM: Observable<TodoRemovedEvent> = this.actions.pipe(
+    ofType<TodoRemoveWithConfirmationCommand>(TodoCommandTypes.RemoveTodoWithConfirmation),
+    map(action => {
+      const { id } = action.payload;
+      return new TodoRemovedEvent({ id });
+    })
+  );
+
+  @_SplitterDecider(TodoRequestAddTodoCommand, [LogActionCommand, TodoAddTodoCommand])
+  @Effect()
+  LOG_ADD_TODO: Observable<Action> = this.actions.pipe(
+    ofType<TodoRequestAddTodoCommand>(TodoCommandTypes.RequestAddTodo),
+    switchMap(action => {
+      const { todo, addLast } = action.payload;
+      return [
+        new TodoAddTodoCommand({ todo, addLast }),
+        new LogActionCommand({ action })
+      ];
+    })
+  );
+
+  @_AggregatorDecider([LogActionCommand, TodoAddTodoCommand], TodoAddedEvent)
+  @Effect()
+  WEIRD_TODO_STUFF: Observable<Action> = this.actions.pipe(
+    ofType<LogActionCommand>(GenericCommandTypes.LogAction),
+    // this is an execercise for the astute reader or: I have an implementation, but not enough paper
+    map(action => new TodoAddedEvent({todo: {}}))
+  );
+
+  constructor(private actions: Actions) {
+  }
 }

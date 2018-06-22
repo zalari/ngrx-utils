@@ -10,7 +10,7 @@
     "experimentalDecorators": true,
     "inlineSources": true,
     "noImplicitAny": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false,
     "noUnusedParameters": false,
     "removeComments": true,
     "skipLibCheck": true,
@@ -28,7 +28,7 @@
   },
   "include": [
     "typings.d.ts",
-    "src/**/*"
+    "src/bin/**/*.ts"
   ],
   "exclude": [
     "node_modules",

@@ -1,0 +1,25 @@
+@startuml
+|In|
+start
+-> {{effectName}};
+:{{firstEntry inputActions}}>
+|Out|
+{{#each outputActions}}
+{{#if @first}}
+if (action.payload) then (content {{@index}})
+  :{{this}}>
+  stop
+{{else}}
+  {{#unless @last}}
+    elseif (action.payload) then (content {{@index}})
+  {{else}}
+    else (else)
+  {{/unless}}
+  :{{this}}>
+  stop
+{{/if}}
+{{#if @last}}
+endif
+{{/if}}
+{{/each}}
+@enduml

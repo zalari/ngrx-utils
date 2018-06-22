@@ -1,4 +1,4 @@
 export enum DiagramType {
-    Activity = 'activity',
-    Sequence = 'sequence'
+  Activity = 'activity',
+  Sequence = 'sequence'
 }

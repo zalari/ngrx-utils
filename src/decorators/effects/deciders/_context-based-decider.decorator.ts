@@ -1,3 +1,3 @@
-export function _ContextBasedDecider(optional?: any): Function {
-    return function(constructor: Function) {};
+export function _ContextBasedDecider(optional?: any, to?: any[]): Function {
+  return function (constructor: Function) {};
 }
