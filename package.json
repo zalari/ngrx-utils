@@ -20,6 +20,9 @@
     "@ngrx/store": "^5.1.0"
   },
   "devDependencies": {
+    "@angular/core": "^5.1.1",
+    "@ngrx/effects": "^5.1.0",
+    "@ngrx/store": "^5.1.0",
     "@types/chai": "4.1.2",
     "@types/commander": "2.12.2",
     "@types/handlebars": "4.0.38",
