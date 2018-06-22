@@ -1,0 +1,12 @@
+@startuml
+|In|
+start
+-> EFFECT_FUNCTION_NAME;
+if (action.type) then (Action1)
+  |Out|
+  :Action>
+else (Action2)
+  :Action>
+endif
+detach
+@enduml

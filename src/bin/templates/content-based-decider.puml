@@ -1,0 +1,17 @@
+@startuml
+|In|
+start
+-> EFFECT_FUNCTION_NAME;
+:Action>
+|Out|
+if (action.payload) then (content 1)
+  :Action1>
+  stop
+elseif (action.payload) then (content 2)
+  :Action2>
+  stop
+else (else)
+  :Action3>
+  stop
+endif
+@enduml
