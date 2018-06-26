@@ -17,12 +17,14 @@ import { Action } from '@ngrx/store';
 import { _ContentBasedDecider } from '../src/decorators/effects/deciders/_content-based-decider.decorator';
 import { _ContextBasedDecider } from '../src/decorators/effects/deciders/_context-based-decider.decorator';
 import { _NormalizeTransformer } from '../src/decorators/effects/transformers/_normalize-transformer.decorator';
+import { _EnrichTransformer } from '../src/decorators/effects/transformers/_enrich-transformer.decorator';
 
 // Define Actions by using Classes and discriminated union types
 
 // discriminators for commands
 enum TodoCommandTypes {
   AddTodo = '[Todo] ADD_TODO',
+  AddTodoByUser = '[Todo] ADD_TODO_BY_USER',
   RequestAddTodo = '[Todo] REQUEST_ADD_TODO',
   RemoveTodo = '[Todo] REMOVE_TODO',
   AppendTodo = '[Todo] APPEND_TODO',
@@ -54,6 +56,15 @@ class TodoAddTodoCommand extends CommandAction {
   readonly type = TodoCommandTypes.AddTodo;
 
   constructor(public payload: { todo: Partial<Todo>, addLast?: boolean }) {
+    super();
+  }
+}
+
+@_Command()
+class TodoAddTodoByUserCommand extends CommandAction {
+  readonly type = TodoCommandTypes.AddTodoByUser;
+
+  constructor(public payload: { todo: Partial<Todo>, addLast?: boolean, user: any }) {
     super();
   }
 }
@@ -336,6 +347,18 @@ class TodoEffects {
       TodoRequestAddTodoCommand>(GenericCommandTypes.LogAction, TodoCommandTypes.AddTodo, TodoCommandTypes.RequestAddTodo),
     map(action => new TodoAddedEvent({ todo: {} }))
   );
+
+  @_EnrichTransformer(TodoAddTodoCommand, TodoAddTodoByUserCommand)
+  @Effect()
+  ADD_USER_TO_ADD_TODO: Observable<TodoAddTodoByUserCommand> = this.actions.pipe(
+    ofType<TodoAddTodoCommand>(TodoCommandTypes.AddTodo),
+    // this is an execercise for the astute reader or: I have an implementation, but not enough paper
+    map(action => {
+      const { todo, addLast } = action.payload;
+      // in reality this would be some async call
+      const user = {};
+      return new TodoAddTodoByUserCommand({ todo, addLast, user });
+    })
   );
 
   constructor(private actions: Actions) {
