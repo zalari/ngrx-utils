@@ -1,0 +1,14 @@
+@startuml
+|In|
+start
+-> {{effectName}};
+fork
+:Action1>
+fork again
+:Action2>
+end fork
+fork
+|Out|
+:{{firstEntry outputActions}}>
+stop
+@enduml
