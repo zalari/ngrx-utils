@@ -1,0 +1,16 @@
+@startuml
+-> {{effectName}};
+|In|
+start
+if (action1?) then
+ :Action1>
+elseif (action2) then
+ :Action2>
+else (action3)
+ :Action3>
+endif
+|Out|
+:{{firstEntry outputActions}};
+
+stop
+@enduml

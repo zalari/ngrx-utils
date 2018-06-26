@@ -16,6 +16,7 @@ import { _Document } from '../src/decorators/actions/_document.decorator';
 import { Action } from '@ngrx/store';
 import { _ContentBasedDecider } from '../src/decorators/effects/deciders/_content-based-decider.decorator';
 import { _ContextBasedDecider } from '../src/decorators/effects/deciders/_context-based-decider.decorator';
+import { _NormalizeTransformer } from '../src/decorators/effects/transformers/_normalize-transformer.decorator';
 
 // Define Actions by using Classes and discriminated union types
 
@@ -321,10 +322,20 @@ class TodoEffects {
 
   @_AggregatorDecider([LogActionCommand, TodoAddTodoCommand], TodoAddedEvent)
   @Effect()
-  WEIRD_TODO_STUFF: Observable<Action> = this.actions.pipe(
+  WEIRD_TODO_STUFF: Observable<TodoAddedEvent> = this.actions.pipe(
     ofType<LogActionCommand>(GenericCommandTypes.LogAction),
     // this is an execercise for the astute reader or: I have an implementation, but not enough paper
-    map(action => new TodoAddedEvent({todo: {}}))
+    map(action => new TodoAddedEvent({ todo: {} }))
+  );
+
+  @_NormalizeTransformer([LogActionCommand, TodoAddTodoCommand, TodoRequestAddTodoCommand], TodoAddedEvent)
+  @Effect()
+  WEIRD_TRANSFORM: Observable<TodoAddedEvent> = this.actions.pipe(
+    ofType<LogActionCommand |
+      TodoAddTodoCommand |
+      TodoRequestAddTodoCommand>(GenericCommandTypes.LogAction, TodoCommandTypes.AddTodo, TodoCommandTypes.RequestAddTodo),
+    map(action => new TodoAddedEvent({ todo: {} }))
+  );
   );
 
   constructor(private actions: Actions) {
