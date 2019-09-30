@@ -1,12 +1,13 @@
 {
   "name": "@zalari/ngrx-utils",
   "description": "A library containing tagging decorators for @ngrx to help implementing the Nrwl conventions for @ngrx/effects.",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "publishConfig": {
     "access": "public"
   },
   "repository": "github:zalari/ngrx-utils",
   "bin": "dist/bin/index.js",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "clean": "shx rm -rf dist/",
