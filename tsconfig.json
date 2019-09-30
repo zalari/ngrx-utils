@@ -4,6 +4,7 @@
     "module": "commonjs",
     "moduleResolution": "node",
 
+    "declaration": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "inlineSources": true,
@@ -14,6 +15,7 @@
     "skipLibCheck": true,
     "strictNullChecks": true,
 
+    "outDir": "dist",
     "target": "es5",
     "rootDir": "src",
     "lib": [
