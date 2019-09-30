@@ -1,6 +1,5 @@
 # Output Directories #
 /dist
-/types
 /docs
 
 .classpath
