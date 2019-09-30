@@ -1,8 +1,6 @@
 {
   "compilerOptions": {
-    "outDir": "dist",
     "sourceMap": true,
-    "declaration": true,
     "module": "commonjs",
     "moduleResolution": "node",
 
@@ -28,7 +26,7 @@
   },
   "include": [
     "typings.d.ts",
-    "src/bin/**/*.ts"
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules",
