@@ -11,6 +11,7 @@
   "scripts": {
     "declare": "shx rm -rf types/ && tsc --project tsconfig.types.json",
     "build": "shx rm -rf dist/ && tsc --project tsconfig.dist.json",
+    "postbuild": "shx cp -r src/bin/templates dist/bin/templates",
     "start": "ts-node src/bin/index.ts",
     "test": "mocha -r ts-node/register test/**/*.spec.ts",
     "test:example": "npm run start -- --config test/test.tsconfig.json --source test/test.effects.ts"
