@@ -52,7 +52,7 @@ export class PumlActivityGeneratorV2 implements Generator {
     // TODO: add .hbs to templates
     const taggingDecoratorTemplateFile = _.kebabCase(taggingDecorator) + '.puml';
     // its handlebar template
-    const template = fs.readFileSync(`src/bin/templates/${taggingDecoratorTemplateFile}`, 'utf8');
+    const template = fs.readFileSync(`${__dirname}/../templates/${taggingDecoratorTemplateFile}`, 'utf8');
 
     // compile and evaluate with context
     const compiledTemplate = handlebars
